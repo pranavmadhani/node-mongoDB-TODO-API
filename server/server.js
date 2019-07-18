@@ -16,10 +16,7 @@ app.post('/api/todos',(req,res)=>
   });
 console.log(req.body)
 
-
-  
-
-  todo.save().then((doc)=>
+ todo.save().then((doc)=>
 {
     res.send(doc)
 },(err)=>{
@@ -29,9 +26,24 @@ console.log(req.body)
 )
 })
 
+app.get('/api/todos',(req,res)=>{
+  Todo.find().then((todos)=>
+  {
+      res.send({todos})
+  },(err)=>{
+  
+      res.status(400).send(err);
+  }
+  )
+})
+
 
 app.listen(3000,()=>
 {
     console.log("connection established at 3000")
 })
  
+
+module.exports={
+  app
+}

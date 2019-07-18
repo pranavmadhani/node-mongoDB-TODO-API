@@ -22,19 +22,7 @@ var Todo = mongoose.model('Todo',
 
 })
 
-// var t1 = new Todo({
-//     text:"cocked dinner",
-//      completed: true,
-//      completedAt: new Date().getTime()
-// })
 
-// t1.save().then((doc)=>
-// {
-//    // console.log(doc)
-// },(err)=>{
-
-//     console.log("not done")
-// })
 
 module.exports={
     Todo
