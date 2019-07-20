@@ -12,9 +12,10 @@ var express = require('express')
 var bodyParser = require('body-parser')
 var obID = require('mongodb').ObjectID;
 const port = process.env.PORT || 3000;
-const _= require('lodash');
+const _ = require('lodash');
 var app = express();
 app.use(bodyParser.json());
+var jwt = require('jsonwebtoken')
 
 
 app.post('/api/todos', (req, res) => {
@@ -101,37 +102,82 @@ app.delete('/api/todos/:id', (req, res) => {
 })
 
 
-app.patch('/api/todos/:id',(req,res)=>{
+app.patch('/api/todos/:id', (req, res) => {
 
   var id = req.params.id;
-  var body = _.pick(req.body,['text','completed'])
-  if (!obID.isValid(id))
+  var body = _.pick(req.body, ['text', 'completed'])
+  if (!obID.isValid(id)) {
+    return res.status(404).send('invalid ID')
+  }
+  if (_.isBoolean(body.completed) && body.completed) {
+    body.completedAt = new Date().getTime();
+  } else {
+    body.completed = false;
+    body.completedAt = null;
+  }
+
+  Todo.findByIdAndUpdate(id, {
+    $set: body
+  }, {
+    new: true
+  }).then((todo) => {
+
+    if (!todo)
+      return res.status(404).send();
+
+    res.send({
+      todo
+    })
+
+  }).catch((err) => {
+    res.status(400).send()
+  })
+
+})
+
+/***********USERS API **************************** */
+
+
+app.post('/api/register', (req, res) => {
+  var required_fields = _.pick(req.body, ['email', 'password'])
+  var _id = _.pick(req.body, ["_id"]);
+
+
+  var user = new User({
+    email: required_fields.email,
+    password: required_fields.password
+  });
+
+  user.save().then((creds) => {
+    //console.log(creds)
+    
+      var token = jwt.sign({id:creds._id.toHexString(),email:creds.email},"secret123");
+      res.status(200)
+      .header('x-auth',token)
+      .send({
+        id:creds._id,
+        email: creds.email
+      })
+
+ 
+    
+
+  }).catch((err)=>
   {
-  return res.status(404).send('invalid ID')
-}
-if(_.isBoolean(body.completed)&& body.completed)
-{
-  body.completedAt = new Date().getTime();
-}
-else{
-  body.completed = false;
-  body.completedAt = null;
-}
-
-Todo.findByIdAndUpdate(id,{$set:body},{new:true}).then((todo)=>{
-
-  if(!todo)
-  return res.status(404).send();
-
-  res.send({todo})
-
-}).catch((err)=>{
-res.status(400).send()
-})
-
+    res.status(400).send(err) 
+  })
 })
 
 
+
+
+
+
+
+
+
+
+/*******************CONNECTION ESTABLISHMENT PHASE*************** */
 
 app.listen(port, () => {
   console.log(`connection established at ${port}`)
