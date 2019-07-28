@@ -16,6 +16,7 @@ const _ = require('lodash');
 var app = express();
 app.use(bodyParser.json());
 var jwt = require('jsonwebtoken')
+var {authenticate} = require('./middleware/auth')
 
 
 app.post('/api/todos', (req, res) => {
@@ -174,18 +175,13 @@ app.post('/api/register', (req, res) => {
 
 
 
-app.get('/api/users/me',(req,res)=>{
+app.get('/api/users/me',authenticate,(req,res)=>{
 
-  var token = req.header('x-auth');
-  console.log(token);
-  User.findByToken(token).then((user)=>
-  {
-    if(!user)
-    {
-
-    }
-    res.send(user);
+  res.send({
+   id: req.user._id,
+    email: req.user.email
   })
+
 })
 
 

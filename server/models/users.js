@@ -74,6 +74,7 @@ try {
     
 } catch (error) {
     
+    return Promise.reject();
 }
 
 return User.findOne({
