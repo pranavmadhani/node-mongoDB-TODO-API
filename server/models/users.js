@@ -42,20 +42,53 @@ var UserSchema = new  mongoose.Schema({
 
 });
 
+
+UserSchema.methods.generateAuthToken = function(){
+
+    var user = this;
+    var access = 'auth';
+    var token =jwt.sign({_id:user._id.toHexString(),access},"secret123").toString();
+   
+    user.tokens = user.tokens.concat([{access,token}]);
+    
+  return user.save().then(()=>{
+        return token;
+     })
+
+
+
+}
+
+
+
+
+
+UserSchema.statics.findByToken = function(token){
+var User = this;
+console.log(User);
+var decoded;
+
+try {
+
+    decoded = jwt.decode(token,"secret123");
+    
+} catch (error) {
+    
+}
+
+return User.findOne({
+
+    _id: decoded._id,
+    'tokens.token':token,
+    'tokens.access':'auth'
+
+});
+
+}
+
+
 var User = mongoose.model('User',UserSchema);
 
-UserSchema.methods.generateAuthToken = function()
-{
-    var user = this;
-    var access= "auth"
-    var token = jwt.sign({_id:user._id.toHexString(),access},'secret123').toString();
-    user.tokens = user.tokens.concat([{access,token}]);
-  
-  return  user.save().then(()=>{
-    return token;
-
-    })
-}
 
 module.exports={
     User

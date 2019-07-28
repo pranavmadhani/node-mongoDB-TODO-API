@@ -139,41 +139,54 @@ app.patch('/api/todos/:id', (req, res) => {
 
 
 app.post('/api/register', (req, res) => {
+ 
   var required_fields = _.pick(req.body, ['email', 'password'])
-  var _id = _.pick(req.body, ["_id"]);
+   var user = new User(required_fields);
 
-
-  var user = new User({
-    email: required_fields.email,
-    password: required_fields.password
-  });
-
-  user.save().then((creds) => {
-    //console.log(creds)
+  user.save().then(() => {
+ 
+    return user.generateAuthToken()
+   
     
-      var token = jwt.sign({id:creds._id.toHexString(),email:creds.email},"secret123");
-      res.status(200)
-      .header('x-auth',token)
-      .send({
-        id:creds._id,
-        email: creds.email
+        
+      }).then((token)=>{
+
+        res.header("x-auth",token).send({
+          email:user.email,
+          id: user._id
+        })
+
+      }).catch((err)=>
+    
+      {
+        res.status(400).send(err) 
       })
 
+      
  
     
 
-  }).catch((err)=>
+  })
+
+
+
+
+
+
+
+app.get('/api/users/me',(req,res)=>{
+
+  var token = req.header('x-auth');
+  console.log(token);
+  User.findByToken(token).then((user)=>
   {
-    res.status(400).send(err) 
+    if(!user)
+    {
+
+    }
+    res.send(user);
   })
 })
-
-
-
-
-
-
-
 
 
 
