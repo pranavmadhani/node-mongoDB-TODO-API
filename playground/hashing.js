@@ -1,12 +1,19 @@
 //var AES = require("crypto-js/aes");
 var SHA256 = require("crypto-js/sha256");
 var jwt = require('jsonwebtoken')
+var bcrypt = require('bcryptjs')
 
-let data = {
-    name:"pranav madhani"
-}
-var token = jwt.sign(data,"secret123")
-console.log(token);
+bcrypt.genSalt(12,(err,salt)=>{
 
-let decode = jwt.decode(token,"secret123")
-console.log(decode)
+    bcrypt.hash("secret123",salt,(err,hash)=>{
+        
+    console.log(hash)
+
+    })
+    
+})
+
+
+bcrypt.compare("secret123","$2a$12$gA6ly4GZbjNvDkmQ3Z2zieklpHYA67Ef7df3cPZPWiFcUatV6MV0K",(err,res)=>{
+    console.log(res)
+})
