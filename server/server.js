@@ -17,6 +17,7 @@ var app = express();
 app.use(bodyParser.json());
 var jwt = require('jsonwebtoken')
 var {authenticate} = require('./middleware/auth')
+var bcrypt = require('bcryptjs')
 
 
 app.post('/api/todos', (req, res) => {
@@ -171,7 +172,33 @@ app.post('/api/register', (req, res) => {
 
 
 
+app.post('/api/login',(req,res)=>{
 
+  var required_fields = _.pick(req.body, ['email', 'password'])
+  
+  User.findByCredentials(required_fields.email,required_fields.password).then((user)=>{
+    return user.generateAuthToken().then((token)=>{
+
+      res.header('x-auth',token).send({
+        email:user.email,
+        id:user._id
+      }
+        )
+    })
+
+
+    
+
+  }).catch((err)=>
+  {
+
+    res.status(400).send(err)
+  })
+  
+  
+
+
+})
 
 
 
