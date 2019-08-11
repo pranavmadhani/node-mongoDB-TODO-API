@@ -20,9 +20,10 @@ var {authenticate} = require('./middleware/auth')
 var bcrypt = require('bcryptjs')
 
 
-app.post('/api/todos', (req, res) => {
+app.post('/api/todos',authenticate, (req, res) => {
   var todo = new Todo({
-    text: req.body.text
+    text: req.body.text,
+    _creator : req.user._id
   });
   console.log(req.body)
 
@@ -34,8 +35,10 @@ app.post('/api/todos', (req, res) => {
   })
 })
 
-app.get('/api/todos', (req, res) => {
-  Todo.find().then((todos) => {
+app.get('/api/todos',authenticate, (req, res) => {
+  Todo.find({
+    _creator: req.user._id
+  }).then((todos) => {
     res.send({
       todos
     })
@@ -181,7 +184,7 @@ app.post('/api/login',(req,res)=>{
 
       res.header('x-auth',token).send({
         email:user.email,
-        id:user._id
+        id:user._id 
       }
         )
     })
@@ -212,6 +215,18 @@ app.get('/api/users/me',authenticate,(req,res)=>{
 })
 
 
+
+app.delete('api/users/me/token',authenticate,(req,res)=>{
+
+  req.user.removeToken(req.token).then(()=>{
+
+    res.status(200).send();
+  }, ()=>{
+
+    res.status(400).send()
+  })
+
+})
 
 /*******************CONNECTION ESTABLISHMENT PHASE*************** */
 
